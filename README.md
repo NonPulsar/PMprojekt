@@ -1,2 +1,2 @@
 # PMprojekt
-Grupowy projekt sumulacji układu planetarnego na pakiety matematyczne
+Grupowy projekt symulacji układu planetarnego na pakiety matematyczne
