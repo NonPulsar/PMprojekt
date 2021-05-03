@@ -7,14 +7,14 @@ using Plots
 G = 6.6732*10^(-11)     # stała grawitacyjna 
 
 # Parametry początkowe obiektów
-Planeta1 = Dict("M" => 10^16, "coord" => [0,10000], "v_vec" => [3,0])
-Planeta2 = Dict("M" => 10^16, "coord" => [0,0], "v_vec" => [-3,0])
+Planeta1 = Dict("M" => 10^16, "coord" => [0,10000], "v_vec" => [20,0])
+Planeta2 = Dict("M" => 10^17, "coord" => [0,0], "v_vec" => [-2,0])
 
 #---------------------------------------------------------------------------------------------
 #       FUNKCJE DO OBLICZEŃ 
 #---------------------------------------------------------------------------------------------
 
-dist_vec(coord1,coord2) = coord2 - coord1
+dist_vec(coord1,coord2) = coord2 .- coord1
 """Wylicza wektor odległości z coord1 do coord2"""
 
 vec_length(v::Array) = sqrt(sum(v.^2))
@@ -46,9 +46,12 @@ end
 #               RYSOWANIE WYKRESU
 #-------------------------------------------------------------------------------------------
 
-t = 0:100000        # ilość elementów 
-T = 1              # przedział czasowy     
+t = 0:300         # ilość elementów/klatek
+T = 1              # przedział czasowy 
+n = 20             # ilość przeliczeń na każdą klatkę symulacji
+fps = 20           # ilość kaltek na sekundę w symulacji
 
+"""
 coordx_P1 = []
 coordy_P1 = []
 
@@ -65,4 +68,19 @@ end
 
 plot(coordx_P1,coordy_P1)
 plot!(coordx_P2,coordy_P2)
+"""
 
+
+symulation = @animate for i in t
+    scatter([Planeta1["coord"][1]],[Planeta1["coord"][2]],
+    xlim = (-20000,20000),
+    ylim = (-20000,20000),
+    markersize = 5)
+    scatter!([Planeta2["coord"][1]],[Planeta2["coord"][2]],
+    markersize = 10)
+    for z in 1:n
+        MainFunction(Planeta1,Planeta2,T)
+    end
+end
+
+gif(symulation,"animacja.gif",fps=fps)
