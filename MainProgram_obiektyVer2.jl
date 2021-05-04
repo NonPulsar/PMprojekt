@@ -1,13 +1,9 @@
 # Główny program do obliczania położenia ciał ( dla dwóch obiektów )
-using AstroLib
 using Plots
 
 
 # Ważne stałe
 G = 6.6732*10^(-11)     # stała grawitacyjna 
-
-# Planety z AstroLib
-Mercury = AstroLib.planets["mercury"]
 
 # Konstruktor plantety
 mutable struct My_planet
@@ -20,16 +16,11 @@ end
 # Układ słoneczny ze Słońcem w centrum
 Ziemia = My_planet("Ziemia", 5.972*BigFloat(10)^24, [0, 150*10^9], [29.78*10^3, 0])
 Słońce = My_planet("Słońce", 1.989*BigFloat(10)^30, [0, 0],[0, 0])
+Merkury = My_planet("Merkury", 3.285*BigFloat(10)^23, [0, -58*10^9], [-48*10^3, 0])
+Wenus = My_planet("Wenus", 4.867*BigFloat(10)^24, [108.141*10^9, 0], [0, -35.02*10^3])
+Mars = My_planet("Mars", 6.4171*BigFloat(10)^23, [-227.923*10^9, 0], [0, 24.07*10^3])
 
-lista_solar = [Ziemia,Słońce]
-
-
-# Parametry początkowe obiektów
-Planeta1 = Dict("M" => 10^24, "coord" => [0,10^6], "v_vec" => [15,0])
-Planeta2 = Dict("M" => 10^30, "coord" => [0,0], "v_vec" => [0,0])
-Planeta3 = Dict("M" => 10^24, "coord" => [0,-10^6],"v_vec" =>[-15,0])
-
-lista_planet=[Planeta1, Planeta2, Planeta3]
+lista_solar = [Ziemia,Słońce,Merkury, Wenus, Mars]
 
 #---------------------------------------------------------------------------------------------
 #       FUNKCJE DO OBLICZEŃ 
@@ -69,9 +60,9 @@ end
 
 # PARAMETRY
 t = 0:1000          # ilość klatek 
-n = 20              # ilość przeliczeń na każdą klatkę symulacji
+n = 30              # ilość przeliczeń na każdą klatkę symulacji
 fps = 40            # ilość klatek na sekundę w symulacji
-T = 5000            # zwiększa błąd obliczeniowy, ale pozwala zwiększyć szybkość symulacji
+T = 2000            # zwiększa błąd obliczeniowy, ale pozwala zwiększyć szybkość symulacji
 
 for i in lista_solar
     i.v_vec = i.v_vec.*T
@@ -81,9 +72,15 @@ end
     scatter([Ziemia.coord[1]],[Ziemia.coord[2]],
     xlim = (-250*10^9, 250*10^9),
     ylim = (-250*10^9, 250*10^9),
-    markersize = 5)
+    markersize = 6)
     scatter!([Słońce.coord[1]],[Słońce.coord[2]],
     markersize = 12)
+    scatter!([Merkury.coord[1]],[Merkury.coord[2]],
+    markersize = 4)
+    scatter!([Wenus.coord[1]],[Wenus.coord[2]],
+    markersize = 6)
+    scatter!([Mars.coord[1]],[Mars.coord[2]],
+    markersize = 5)
 
     for z in 1:n
         MainFunction(lista_solar,T)
