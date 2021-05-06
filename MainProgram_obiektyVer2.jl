@@ -20,7 +20,7 @@ Merkury = My_planet("Merkury", 3.285*BigFloat(10)^23, [0, -58*10^9], [-48*10^3, 
 Wenus = My_planet("Wenus", 4.867*BigFloat(10)^24, [108.141*10^9, 0], [0, -35.02*10^3], [0, 0])
 Mars = My_planet("Mars", 6.4171*BigFloat(10)^23, [-227.923*10^9, 0], [0, 24.07*10^3], [0, 0])
 
-lista_solar = [Ziemia,Słońce,Merkury, Wenus, Mars]
+lista_solar = [Ziemia, Słońce, Merkury, Wenus, Mars]
 
 #---------------------------------------------------------------------------------------------
 #       FUNKCJE DO OBLICZEŃ 
@@ -34,6 +34,10 @@ vec_length(v::Array{Float64,1}) = sqrt(sum(v.^2))
 
 F_gravity(M1::BigFloat,M2::BigFloat,r::Array) = (G*M1*M2/vec_length(r)^3).*r
 """Wylicza wektor siły grawitacji"""
+
+function Skalowanie(planeta::My_planet)
+    return (planeta.mass/Ziemia.mass)^(1/10)*6
+end
 
 
 function MainFunction(lista::Array,T::Int64)
@@ -64,39 +68,42 @@ function the_farthest(lista_planet::Array)
     end
     return wynik      
 end
+
+function Symulacja(lista_planet::Array, t::Int64, n::Int64, fps::Int64, T::Int64)
+
+    dist_limit = the_farthest(lista_planet)*1.2
+    list_length = length(lista_planet)
+
+    @time symulation = @animate for i in 1:t
+
+        scatter([lista_planet[1].coord[1]], [lista_planet[1].coord[2]],
+        xlim = (-dist_limit, dist_limit),
+        ylim = (-dist_limit, dist_limit), 
+        markersize = Skalowanie(lista_planet[1]))
+
+        for i in 2:list_length
+            scatter!([lista_planet[i].coord[1]], [lista_planet[i].coord[2]],
+            markersize = Skalowanie(lista_planet[i]))
+        end
+
+        for i in 1:n
+            MainFunction(lista_planet,T)
+        end
+
+    end
+
+    gif(symulation,"animacja.gif",fps=fps)
+
+end
+
 #-------------------------------------------------------------------------------------------
 #               RYSOWANIE WYKRESU
 #-------------------------------------------------------------------------------------------
 
 # PARAMETRY
-t = 0:1000          # ilość klatek 
+t = 1000          # ilość klatek 
 n = 20              # ilość przeliczeń na każdą klatkę symulacji (zwiększa szybkość sumulacji, ale i długość obliczeń)
 fps = 40            # ilość klatek na sekundę w symulacji
 T = 2000           # przedział czasowy pomiędzy każdym kolejnym przeliczeniem pozycji ( zwiększa szybkość symulacji kosztem dokładności )
 
-
-dist_limit = the_farthest(lista_solar)*1.2
-
-@time symulation = @animate for i in t
-    scatter([Ziemia.coord[1]],[Ziemia.coord[2]],
-    xlim = (-dist_limit, dist_limit),
-    ylim = (-dist_limit, dist_limit),
-    grid = true,
-    markersize = 6)
-    scatter!([Słońce.coord[1]],[Słońce.coord[2]],
-    markersize = 12)
-    scatter!([Merkury.coord[1]],[Merkury.coord[2]],
-    markersize = 4)
-    scatter!([Wenus.coord[1]],[Wenus.coord[2]],
-    markersize = 6)
-    scatter!([Mars.coord[1]],[Mars.coord[2]],
-    markersize = 5)
-
-    for z in 1:n
-        MainFunction(lista_solar,T)
-    end
-end
-
-gif(symulation,"animacja.gif",fps=fps)
-
-
+Symulacja(lista_solar,t,n,fps,T)
