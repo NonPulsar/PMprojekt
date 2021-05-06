@@ -1,24 +1,24 @@
 # Główny program do obliczania położenia ciał ( dla dwóch obiektów )
 using Plots
 
-
 # Ważne stałe
-G = 6.6732*10^(-11)     # stała grawitacyjna 
+G = 6.6732*10^(-11)     # stała grawitacji 
 
-# Konstruktor plantety
+# Konstruktor planety
 mutable struct My_planet
     name::String
     mass::BigFloat
     coord::Array{Float64,1}
     v_vec::Array{Float64,1}
+    a_vec::Array{Float64,1}
 end
 
 # Układ słoneczny ze Słońcem w centrum
-Ziemia = My_planet("Ziemia", 5.972*BigFloat(10)^24, [0, 150*10^9], [29.78*10^3, 0])
-Słońce = My_planet("Słońce", 1.989*BigFloat(10)^30, [0, 0],[0, 0])
-Merkury = My_planet("Merkury", 3.285*BigFloat(10)^23, [0, -58*10^9], [-48*10^3, 0])
-Wenus = My_planet("Wenus", 4.867*BigFloat(10)^24, [108.141*10^9, 0], [0, -35.02*10^3])
-Mars = My_planet("Mars", 6.4171*BigFloat(10)^23, [-227.923*10^9, 0], [0, 24.07*10^3])
+Ziemia = My_planet("Ziemia", 5.972*BigFloat(10)^24, [0, 150*10^9], [29.78*10^3, 0], [0, 0])
+Słońce = My_planet("Słońce", 1.989*BigFloat(10)^30, [0, 0], [0, 0], [0, 0])
+Merkury = My_planet("Merkury", 3.285*BigFloat(10)^23, [0, -58*10^9], [-48*10^3, 0], [0, 0])
+Wenus = My_planet("Wenus", 4.867*BigFloat(10)^24, [108.141*10^9, 0], [0, -35.02*10^3], [0, 0])
+Mars = My_planet("Mars", 6.4171*BigFloat(10)^23, [-227.923*10^9, 0], [0, 24.07*10^3], [0, 0])
 
 lista_solar = [Ziemia,Słońce,Merkury, Wenus, Mars]
 
@@ -46,32 +46,42 @@ function MainFunction(lista::Array,T::Int64)
                 FG += F
             end
         end
-        a_vec = FG./lista[i].mass
-        lista[i].v_vec = (T^2).*a_vec + lista[i].v_vec
+        lista[i].a_vec = FG./lista[i].mass      # ustawia wektor przyspieszenia planety 
     end
     for i in 1:length(lista)
-        lista[i].coord =lista[i].coord + lista[i].v_vec
+        lista[i].v_vec += T.*lista[i].a_vec
+        lista[i].coord += T.*lista[i].v_vec  
     end
 end
 
+function the_farthest(lista_planet::Array)
+    """Funkcja do obliczania najdalszej planety od środka układu"""
+    wynik = 0
+    for i in lista_planet
+        if wynik < vec_length(i.coord)
+            wynik = vec_length(i.coord)
+        end
+    end
+    return wynik      
+end
 #-------------------------------------------------------------------------------------------
 #               RYSOWANIE WYKRESU
 #-------------------------------------------------------------------------------------------
 
 # PARAMETRY
 t = 0:1000          # ilość klatek 
-n = 30              # ilość przeliczeń na każdą klatkę symulacji
+n = 20              # ilość przeliczeń na każdą klatkę symulacji (zwiększa szybkość sumulacji, ale i długość obliczeń)
 fps = 40            # ilość klatek na sekundę w symulacji
-T = 2000            # zwiększa błąd obliczeniowy, ale pozwala zwiększyć szybkość symulacji
+T = 2000           # przedział czasowy pomiędzy każdym kolejnym przeliczeniem pozycji ( zwiększa szybkość symulacji kosztem dokładności )
 
-for i in lista_solar
-    i.v_vec = i.v_vec.*T
-end
+
+dist_limit = the_farthest(lista_solar)*1.2
 
 @time symulation = @animate for i in t
     scatter([Ziemia.coord[1]],[Ziemia.coord[2]],
-    xlim = (-250*10^9, 250*10^9),
-    ylim = (-250*10^9, 250*10^9),
+    xlim = (-dist_limit, dist_limit),
+    ylim = (-dist_limit, dist_limit),
+    grid = true,
     markersize = 6)
     scatter!([Słońce.coord[1]],[Słońce.coord[2]],
     markersize = 12)
