@@ -22,6 +22,16 @@ Mars = My_planet("Mars", 6.4171*BigFloat(10)^23, [-227.923*10^9, 0], [0, 24.07*1
 
 lista_solar = [Ziemia, Słońce, Merkury, Wenus, Mars]
 
+# 1 Układ symulacyjny 
+planeta1 = My_planet("1", 10^17, [0,10^4], [5,0], [0,0])
+planeta2 = My_planet("2", 10^17, [0,-10^4], [-5,0], [0,0])
+planeta3 = My_planet("3", 10^17, [0,0], [35,0], [0,0])
+
+lista_symulacja1 = [planeta1, planeta2]
+
+# 2 Układ symulacyjny
+
+
 #---------------------------------------------------------------------------------------------
 #       FUNKCJE DO OBLICZEŃ 
 #---------------------------------------------------------------------------------------------
@@ -38,7 +48,6 @@ F_gravity(M1::BigFloat,M2::BigFloat,r::Array) = (G*M1*M2/vec_length(r)^3).*r
 function Skalowanie(planeta::My_planet)
     return (planeta.mass/Ziemia.mass)^(1/10)*6
 end
-
 
 function MainFunction(lista::Array,T::Int64)
     for i in 1:length(lista)
@@ -69,27 +78,53 @@ function the_farthest(lista_planet::Array)
     return wynik      
 end
 
-function Symulacja(lista_planet::Array, t::Int64, n::Int64, fps::Int64, T::Int64)
+function Symulacja(lista_planet::Array, t::Int64, n::Int64, fps::Int64, T::Int64,Scale::Bool)
 
     dist_limit = the_farthest(lista_planet)*1.2
     list_length = length(lista_planet)
 
-    @time symulation = @animate for i in 1:t
-
-        scatter([lista_planet[1].coord[1]], [lista_planet[1].coord[2]],
-        xlim = (-dist_limit, dist_limit),
-        ylim = (-dist_limit, dist_limit), 
-        markersize = Skalowanie(lista_planet[1]))
-
-        for i in 2:list_length
-            scatter!([lista_planet[i].coord[1]], [lista_planet[i].coord[2]],
-            markersize = Skalowanie(lista_planet[i]))
+    if Scale == true
+        lista_skalowanie = []
+        for i in lista_planet
+            push!(lista_skalowanie,Skalowanie(i))
         end
-
-        for i in 1:n
-            MainFunction(lista_planet,T)
+        @time symulation = @animate for i in 1:t
+        
+            scatter([lista_planet[1].coord[1]], [lista_planet[1].coord[2]],
+            xlim = (-dist_limit, dist_limit),
+            ylim = (-dist_limit, dist_limit), 
+            markersize = lista_skalowanie[1])
+    
+            for i in 2:list_length
+                scatter!([lista_planet[i].coord[1]], [lista_planet[i].coord[2]],
+                markersize = lista_skalowanie[i])
+            end
+    
+            for i in 1:n
+                MainFunction(lista_planet,T)
+            end
+    
         end
+    end
 
+    if Scale == false
+        @time symulation = @animate for i in 1:t
+        
+            scatter([lista_planet[1].coord[1]], [lista_planet[1].coord[2]],
+            xlim = (-dist_limit, dist_limit),
+            ylim = (-dist_limit, dist_limit), 
+            markersize = 6)
+    
+            for i in 2:list_length
+                scatter!([lista_planet[i].coord[1]], [lista_planet[i].coord[2]],
+                markersize = 6)
+            end
+    
+            for i in 1:n
+                MainFunction(lista_planet,T)
+            end
+    
+        end
     end
 
     gif(symulation,"animacja.gif",fps=fps)
@@ -106,4 +141,7 @@ n = 20              # ilość przeliczeń na każdą klatkę symulacji (zwiększ
 fps = 40            # ilość klatek na sekundę w symulacji
 T = 2000           # przedział czasowy pomiędzy każdym kolejnym przeliczeniem pozycji ( zwiększa szybkość symulacji kosztem dokładności )
 
-Symulacja(lista_solar,t,n,fps,T)
+
+# Symulacja(lista_solar,t,n,fps,T,false)
+
+Symulacja(lista_symulacja1, 600, 10, 40, 1, false)
