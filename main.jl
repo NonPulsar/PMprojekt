@@ -1,10 +1,10 @@
-# Główny program do obliczania położenia ciał ( dla dwóch obiektów )
+# Główny program do obliczania położenia ciał
 using Plots
 
 # Ważne stałe
 G = 6.6732*10^(-11)     # stała grawitacji 
 
-# Konstruktor planety
+# Typ planeta
 mutable struct My_planet
     name::String
     mass::BigFloat
@@ -25,11 +25,15 @@ lista_solar = [Ziemia, Słońce, Merkury, Wenus, Mars]
 # 1 Układ symulacyjny 
 planeta1 = My_planet("1", 10^17, [0,10^4], [5,0], [0,0])
 planeta2 = My_planet("2", 10^17, [0,-10^4], [-5,0], [0,0])
-planeta3 = My_planet("3", 10^17, [0,0], [35,0], [0,0])
 
 lista_symulacja1 = [planeta1, planeta2]
 
 # 2 Układ symulacyjny
+planeta3 = My_planet("3", BigFloat(10)^20, [0,3*10^6], [400,0], [0,0])
+planeta4 = My_planet("4", BigFloat(10)^22, [0,0], [0,0], [0,0])
+planeta5 = My_planet("5", BigFloat(10)^20, [0,-10^7], [-120,0], [0,0])
+
+lista_symulacja2 = [planeta3, planeta4, planeta5]
 
 
 #---------------------------------------------------------------------------------------------
@@ -142,6 +146,10 @@ fps = 40            # ilość klatek na sekundę w symulacji
 T = 2000           # przedział czasowy pomiędzy każdym kolejnym przeliczeniem pozycji ( zwiększa szybkość symulacji kosztem dokładności )
 
 
-# Symulacja(lista_solar,t,n,fps,T,false)
+sym1 = Symulacja(lista_solar,t,n,fps,T,true)
 
-Symulacja(lista_symulacja1, 600, 10, 40, 1, false)
+sym2 = Symulacja(lista_symulacja1, 600, 10, 40, 1, false)
+
+sym3 = Symulacja(lista_symulacja2, 600, 10, 40, 30, false)
+
+sym1
