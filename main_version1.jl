@@ -7,7 +7,7 @@ using Plots, LinearAlgebra, Statistics
 # Ważne stałe
 Q = 14                    # pozwala używać Float64 zamiast BigFloat
 G = 6.6732*10^(-11+2Q)     # stała grawitacji 
-def_size = 8.0
+def_size = 8.0              # domyślna wielkość wyświetlana na animacji
 
 # Typ planeta
 mutable struct My_planet
@@ -17,14 +17,15 @@ mutable struct My_planet
     v_vec::Array{Float64,1}
     a_vec::Array{Float64,1}
     size::Float64
+    coords_list::Array{Array{Float64,1},1}
 end
 
 # Układ słoneczny ze Słońcem w centrum
-Ziemia = My_planet("Ziemia", 5.972*10^(24-Q), [0, 150*10^9], [29.78*10^3, 0], [0, 0], def_size)
-Słońce = My_planet("Słońce", 1.989*10^(30-Q), [0, 0], [0, 0], [0, 0], def_size)
-Merkury = My_planet("Merkury", 3.285*10^(23-Q), [0, -58*10^9], [-48*10^3, 0], [0, 0], def_size)
-Wenus = My_planet("Wenus", 4.867*10^(24-Q), [108.141*10^9, 0], [0, -35.02*10^3], [0, 0], def_size)
-Mars = My_planet("Mars", 6.4171*10^(23-Q), [-227.923*10^9, 0], [0, 24.07*10^3], [0, 0], def_size)
+Ziemia = My_planet("Ziemia", 5.972*10^(24-Q), [0, 150*10^9], [29.78*10^3, 0], [0, 0], def_size, [])
+Słońce = My_planet("Słońce", 1.989*10^(30-Q), [0, 0], [0, 0], [0, 0], def_size, [])
+Merkury = My_planet("Merkury", 3.285*10^(23-Q), [0, -58*10^9], [-48*10^3, 0], [0, 0], def_size, [])
+Wenus = My_planet("Wenus", 4.867*10^(24-Q), [108.141*10^9, 0], [0, -35.02*10^3], [0, 0], def_size, [])
+Mars = My_planet("Mars", 6.4171*10^(23-Q), [-227.923*10^9, 0], [0, 24.07*10^3], [0, 0], def_size, [])
 
 lista_solar = [Ziemia, Słońce, Merkury, Wenus, Mars]
 
@@ -81,22 +82,50 @@ T - czas w sekundach po jakim przeliczy nową pozycję"""
 end
 
 
+function Set_coord_list(planets_list::Array{My_planet,1}, frames::Int64, delta_time::Int64, conversion_number::Int64)
+    for i in 1:frames
+        for i in planets_list
+            push!(i.coords_list, i.coord)
+        end
+        for i in 1:conversion_number
+            MainFunction(planets_list,delta_time)
+        end   
+    end
+end
+
 
 #-------------------------------------------------------------------------------------------
 #               SYMULACJA
 #-------------------------------------------------------------------------------------------
 
 # PARAMETRY
-t = 200
-n = 20
+frames = 100
+delta_time = 2000
+conversion_number = 20
 fps = 40
-T = 2000
 
 dist_limit = the_farthest(lista_solar)*1.2
-
-
 Scale_planets(lista_solar)
+@time Set_coord_list(lista_solar,frames,delta_time,conversion_number)
 
+symulation1 = @animate for i in 1:frames
+    scatter([lista_solar[1].coords_list[i][1]],[lista_solar[1].coords_list[i][2]],
+    xlim = (-dist_limit, dist_limit),
+    ylim = (-dist_limit, dist_limit), 
+    markersize = lista_solar[1].size)
+
+    for j in 2:length(lista_solar)
+        scatter!([lista_solar[j].coords_list[i][1]],[lista_solar[j].coords_list[i][2]],
+        markersize = lista_solar[j].size)
+    end
+end
+
+gif(symulation1,"animacja1.gif", fps=fps)
+
+
+
+
+#=
 @time symulation = @animate for i in 1:t
     scatter([lista_solar[1].coord[1]], [lista_solar[1].coord[2]],
     xlim = (-dist_limit, dist_limit),
@@ -114,6 +143,9 @@ Scale_planets(lista_solar)
 end
 
 gif(symulation,"animacja.gif", fps=fps)
+=#
+
+
 
 
 
