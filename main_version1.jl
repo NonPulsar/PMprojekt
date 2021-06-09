@@ -81,8 +81,13 @@ T - czas w sekundach po jakim przeliczy nową pozycję"""
     end
 end
 
-
 function Set_coord_list(planets_list::Array{My_planet,1}, frames::Int64, delta_time::Int64, conversion_number::Int64)
+"""Zapisuje położenia planety w ich atrybucie coords_list
+===========================================================
+frames - zapisywana ilość klatek( położeń planety)
+delta_time - czas w sekundach po jakim przeliczy nową pozycję
+conversion_number - ilość przeliczeń na każdą zapisaną klatkę"""
+
     for i in 1:frames
         for i in planets_list
             push!(i.coords_list, i.coord)
@@ -93,13 +98,32 @@ function Set_coord_list(planets_list::Array{My_planet,1}, frames::Int64, delta_t
     end
 end
 
+function make_symulation(planets_list::Array{My_planet,1})
+"""Tworzy animację ruchu planet na podstawie zapisanych pozycji w atrybucie coords_list"""
+
+    Scale_planets(planets_list)
+    dist_limit = the_farthest(planets_list)*1.2
+    symulation = @animate for i in 1:length(planets_list[1].coords_list)
+        scatter([planets_list[1].coords_list[i][1]],[planets_list[1].coords_list[i][2]],
+        xlim = (-dist_limit, dist_limit),
+        ylim = (-dist_limit, dist_limit), 
+        markersize = planets_list[1].size)
+
+        for j in 2:length(planets_list)
+            scatter!([planets_list[j].coords_list[i][1]],[planets_list[j].coords_list[i][2]],
+            markersize = planets_list[j].size)
+        end 
+    end
+    return symulation
+end
+
 
 #-------------------------------------------------------------------------------------------
 #               SYMULACJA
 #-------------------------------------------------------------------------------------------
 
 # PARAMETRY
-frames = 100
+frames = 500
 delta_time = 2000
 conversion_number = 20
 fps = 40
@@ -108,6 +132,7 @@ dist_limit = the_farthest(lista_solar)*1.2
 Scale_planets(lista_solar)
 @time Set_coord_list(lista_solar,frames,delta_time,conversion_number)
 
+#=
 symulation1 = @animate for i in 1:frames
     scatter([lista_solar[1].coords_list[i][1]],[lista_solar[1].coords_list[i][2]],
     xlim = (-dist_limit, dist_limit),
@@ -119,10 +144,10 @@ symulation1 = @animate for i in 1:frames
         markersize = lista_solar[j].size)
     end
 end
+=#
 
+@time symulation1 = make_symulation(lista_solar)
 gif(symulation1,"animacja1.gif", fps=fps)
-
-
 
 
 #=
