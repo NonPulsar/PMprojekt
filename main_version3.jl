@@ -66,6 +66,13 @@ function Scale_planets(lista::Array{My_planet,1})
     end
 end
 
+function time_for_days(lista::Array{My_planet,1})
+"""Przelicza i zwraca: Czas jednej klatki na dni oraz czas całej symulacji w dniach"""
+    days = lista[1].every_frame_time/86400
+    full_time = days * length(lista[1].v_vecs_list)
+    return days, full_time  
+end
+
 function MainFunction(lista::Array{My_planet,1},T::Int64)
 """Zmień położenie planety o podaną jednostkę czasu
 ===================================================
@@ -132,26 +139,28 @@ function make_symulation1(planets_list::Array{My_planet,1})
 end
 
 function make_symulation2(planets_list::Array{My_planet,1})
-"""Tworzy animację bezwględnej prędkości ciała w czasie"""
-
+"""Tworzy animację bezwględnej prędkości planet w czasie"""
+    days, full_time = time_for_days(planets_list)
     symulation = @animate for i in eachindex(planets_list[1].v_vecs_list)
-        scatter([i*planets_list[1].every_frame_time], [planets_list[1].v_vecs_list[i]])
+        scatter([i*days], [planets_list[1].v_vecs_list[i]],
+        xlim = (0,full_time))
 
         for j in 2:length(planets_list)
-            scatter!([i*planets_list[1].every_frame_time], [planets_list[j].v_vecs_list[i]])
+            scatter!([i*days], [planets_list[j].v_vecs_list[i]])
         end
     end
     return symulation  
 end
 
 function make_symulation3(planets_list::Array{My_planet,1})
-"""Tworzy animację bezględnego przyspieszenia ciała w czasie"""
-
+"""Tworzy animację bezględnego przyspieszenia planet w czasie"""
+    days, full_time = time_for_days(planets_list)
     symulation = @animate for i in eachindex(planets_list[1].a_vecs_list)
-        scatter([i*planets_list[1].every_frame_time], [planets_list[1].a_vecs_list[i]])
+        scatter([i*days], [planets_list[1].a_vecs_list[i]],
+        xlim = (0, full_time))
 
         for j in 2:length(planets_list)
-            scatter!([i*planets_list[1].every_frame_time], [planets_list[j].a_vecs_list[i]])
+            scatter!([i*days], [planets_list[j].a_vecs_list[i]])
         end
     end
     return symulation   
@@ -165,61 +174,16 @@ end
 # PARAMETRY
 frames = 200
 delta_time = 2000
-conversion_number = 20
+conversion_number = 10
 fps = 40
 
-dist_limit = the_farthest(lista_solar)*1.2
 Scale_planets(lista_solar)
 @time Set_coord_list(lista_solar,frames,delta_time,conversion_number)       # ustawia wszystkie listy w atrybutach planet
-#@time symulation1 = make_symulation1(lista_solar)      # symulacja orbitowania planet
-#gif(symulation1,"animacja1.gif", fps=fps)
+@time symulation1 = make_symulation1(lista_solar)      # symulacja orbitowania planet
+gif(symulation1,"animacja1.gif", fps=fps)
 #@time symulation2 = make_symulation2(lista_solar)      # symulacja prędkości planet
 #gif(symulation2,"animacja2.gif",fps=fps)
-@time symulation3 = make_symulation3(lista_solar)       # symulacja przyspieszenia planet
-gif(symulation3,"animacja3.gif",fps=fps)
-
-
-
-#   STARE NIEUŻYWANE
-#==============================================================================#
-#=
-symulation1 = @animate for i in 1:frames
-    scatter([lista_solar[1].coords_list[i][1]],[lista_solar[1].coords_list[i][2]],
-    xlim = (-dist_limit, dist_limit),
-    ylim = (-dist_limit, dist_limit), 
-    markersize = lista_solar[1].size)
-
-    for j in 2:length(lista_solar)
-        scatter!([lista_solar[j].coords_list[i][1]],[lista_solar[j].coords_list[i][2]],
-        markersize = lista_solar[j].size)
-    end
-end
-=#
-
-#@time symulation2 = make_symulation2(lista_solar)
-#gif(symulation2,"animacja2.gif", fps=fps)
-
-#=
-@time symulation = @animate for i in 1:t
-    scatter([lista_solar[1].coord[1]], [lista_solar[1].coord[2]],
-    xlim = (-dist_limit, dist_limit),
-    ylim = (-dist_limit, dist_limit), 
-    markersize = lista_solar[1].size)
-
-    for i in 2:length(lista_solar)
-        scatter!([lista_solar[i].coord[1]], [lista_solar[i].coord[2]],
-        markersize = lista_solar[i].size)
-    end
-
-    for i in 1:n
-        MainFunction(lista_solar,T)
-    end
-end
-
-gif(symulation,"animacja.gif", fps=fps)
-=#
-
-
-
+#@time symulation3 = make_symulation3(lista_solar)       # symulacja przyspieszenia planet
+#gif(symulation3,"animacja3.gif",fps=fps)
 
 
